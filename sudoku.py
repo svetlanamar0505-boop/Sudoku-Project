@@ -15,6 +15,27 @@ GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 GRAY = (150, 150, 150)
 LIGHT_GRAY = (200, 200, 200)
+LIGHT_BLUE = (173, 216, 230)
+STAR_COLOR = (255, 255, 150)
+
+STARS = [
+    (50, 60), (490, 80), (30, 200), (510, 180), (80, 420),
+    (460, 400), (100, 600), (440, 620), (270, 80), (200, 700),
+    (350, 710), (510, 500), (25, 350), (480, 300), (150, 150),
+    (390, 130), (60, 700), (500, 700)
+]
+
+
+def draw_star(surface, color, cx, cy, size):
+    import math
+    points = []
+    for i in range(10):
+        angle = math.pi / 5 * i - math.pi / 2
+        r = size if i % 2 == 0 else size // 2
+        x = cx + r * math.cos(angle)
+        y = cy + r * math.sin(angle)
+        points.append((x, y))
+    pygame.draw.polygon(surface, color, points)
 
 
 class Cell:
@@ -190,7 +211,10 @@ class Board:
 
 def start_screen():
         while True:
-            screen.fill(WHITE)
+            screen.fill(LIGHT_BLUE)
+            for(x, y) in STARS:
+                draw_star(screen, STAR_COLOR, x, y, 12)
+            font = pygame.font.SysFont('Times New Roman', 50, bold=True)
             mx, my = pygame.mouse.get_pos()
 
             font = pygame.font.SysFont('Arial', 50, bold=True)
