@@ -187,3 +187,176 @@ class Board:
             new_c = col + dc
             if 0 <= new_r < 9 and 0 <= new_c < 9:
                 self.select(new_r, new_c)
+
+def start_screen():
+        while True:
+            screen.fill(WHITE)
+            mx, my = pygame.mouse.get_pos()
+
+            font = pygame.font.SysFont('Arial', 50, bold=True)
+            text = font.render("SUDOKU", True, BLACK)
+            screen.blit(text, (270 - text.get_width() // 2, 250))
+
+            font2 = pygame.font.SysFont('Arial', 20)
+            text2 = font2.render("Select a Difficulty:", True, BLACK)
+            screen.blit(text2, (270 - text2.get_width() // 2, 330))
+
+            easy_rect = pygame.Rect(75, 390, 120, 40)
+            medium_rect = pygame.Rect(210, 390, 120, 40)
+            hard_rect = pygame.Rect(345, 390, 120, 40)
+
+            pygame.draw.rect(screen, LIGHT_GRAY, easy_rect)
+            pygame.draw.rect(screen, LIGHT_GRAY, medium_rect)
+            pygame.draw.rect(screen, LIGHT_GRAY, hard_rect)
+
+            font3 = pygame.font.SysFont('Arial', 18)
+            screen.blit(font3.render("Easy", True, BLACK), (75 + 60 - font3.size("Easy")[0] // 2, 400))
+            screen.blit(font3.render("Medium", True, BLACK), (210 + 60 - font3.size("Medium")[0] // 2, 400))
+            screen.blit(font3.render("Hard", True, BLACK), (345 + 60 - font3.size("Hard")[0] // 2, 400))
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if easy_rect.collidepoint(mx, my):
+                        return "easy"
+                    if medium_rect.collidepoint(mx, my):
+                        return "medium"
+                    if hard_rect.collidepoint(mx, my):
+                        return "hard"
+
+            pygame.display.flip()
+
+def game_screen(difficulty):
+        board = Board(540, 780, screen, difficulty)
+
+        while True:
+            screen.fill(WHITE)
+            mx, my = pygame.mouse.get_pos()
+            font = pygame.font.SysFont('Arial', 30, bold=True)
+            text = font.render("SUDOKU", True, BLACK)
+            screen.blit(text, (270 - text.get_width() // 2, 20))
+            board.draw()
+            reset_rect = pygame.Rect(80, 700, 120, 40)
+            restart_rect = pygame.Rect(210, 700, 120, 40)
+            exit_rect = pygame.Rect(340, 700, 120, 40)
+
+            pygame.draw.rect(screen, LIGHT_GRAY, reset_rect)
+            pygame.draw.rect(screen, LIGHT_GRAY, restart_rect)
+            pygame.draw.rect(screen, LIGHT_GRAY, exit_rect)
+            font2 = pygame.font.SysFont('Arial', 18)
+            screen.blit(font2.render("Reset", True, BLACK), (80 + 60 - font2.size("Reset")[0] // 2, 710))
+            screen.blit(font2.render("Restart", True, BLACK), (210 + 60 - font2.size("Restart")[0] // 2, 710))
+            screen.blit(font2.render("Exit", True, BLACK), (340 + 60 - font2.size("Exit")[0] // 2, 710))
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if reset_rect.collidepoint(mx, my):
+                        board.reset_to_original()
+                    elif restart_rect.collidepoint(mx, my):
+                        return "restart"
+                    elif exit_rect.collidepoint(mx, my):
+                        pygame.quit()
+                        sys.exit()
+                    else:
+                        pos = board.click(mx, my)
+                        if pos is not None:
+                            board.select(pos[0], pos[1])
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_UP:
+                        board.move_selection(-1, 0)
+                    elif event.key == pygame.K_DOWN:
+                        board.move_selection(1, 0)
+                    elif event.key == pygame.K_LEFT:
+                        board.move_selection(0, -1)
+                    elif event.key == pygame.K_RIGHT:
+                        board.move_selection(0, 1)
+                    elif event.key == pygame.K_BACKSPACE:
+                        board.clear()
+                    elif event.key == pygame.K_RETURN:
+                        if board.selected:
+                            row, col = board.selected
+                            cell = board.cells[row][col]
+                            if cell.sketched_value != 0:
+                                board.place_number(cell.sketched_value)
+                                if board.is_full():
+                                    if board.check_board():
+                                        return "win"
+                                    else:
+                                        return "lose"
+                    elif pygame.K_1 <= event.key <= pygame.K_9:
+                        board.sketch(event.key - pygame.K_0)
+            pygame.display.flip()
+
+def win_screen():
+        while True:
+            screen.fill(WHITE)
+            mx, my = pygame.mouse.get_pos()
+            font = pygame.font.SysFont('Arial', 50, bold=True)
+            text = font.render("You Win!", True, GREEN)
+            screen.blit(text, (270 - text.get_width() // 2, 300))
+            again_rect = pygame.Rect(100, 400, 150, 40)
+            quit_rect = pygame.Rect(290, 400, 150, 40)
+            pygame.draw.rect(screen, LIGHT_GRAY, again_rect)
+            pygame.draw.rect(screen, LIGHT_GRAY, quit_rect)
+
+            font2 = pygame.font.SysFont('Arial', 18)
+            screen.blit(font2.render("Play Again", True, BLACK), (100 + 75 - font2.size("Play Again")[0] // 2, 410))
+            screen.blit(font2.render("Quit", True, BLACK), (290 + 75 - font2.size("Quit")[0] // 2, 410))
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if again_rect.collidepoint(mx, my):
+                        return "restart"
+                    if quit_rect.collidepoint(mx, my):
+                        pygame.quit()
+                        sys.exit()
+            pygame.display.flip()
+
+def game_over_screen():
+        while True:
+            screen.fill(WHITE)
+            mx, my = pygame.mouse.get_pos()
+
+            font = pygame.font.SysFont('Arial', 50, bold=True)
+            text = font.render("Game Over :(", True, RED)
+            screen.blit(text, (270 - text.get_width() // 2, 300))
+            again_rect = pygame.Rect(100, 400, 150, 40)
+            quit_rect = pygame.Rect(290, 400, 150, 40)
+            pygame.draw.rect(screen, LIGHT_GRAY, again_rect)
+            pygame.draw.rect(screen, LIGHT_GRAY, quit_rect)
+            font2 = pygame.font.SysFont('Arial', 18)
+            screen.blit(font2.render("Play Again", True, BLACK), (100 + 75 - font2.size("Play Again")[0] // 2, 410))
+            screen.blit(font2.render("Quit", True, BLACK), (290 + 75 - font2.size("Quit")[0] // 2, 410))
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if again_rect.collidepoint(mx, my):
+                        return "restart"
+                    if quit_rect.collidepoint(mx, my):
+                        pygame.quit()
+                        sys.exit()
+            pygame.display.flip()
+
+while True:
+        difficulty = start_screen()
+        result = game_screen(difficulty)
+
+        if result == "win":
+            action = win_screen()
+        elif result == "lose":
+            action = game_over_screen()
+        else:
+            action = "restart"
+        if action == "restart":
+            continue
